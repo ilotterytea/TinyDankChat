@@ -8,6 +8,7 @@ data class GenericEmote(
     val scale: Int,
     val emoteType: EmoteType,
     val isOverlayEmote: Boolean = false,
+    val instanceUrl: String? = null
 ) : Comparable<GenericEmote> {
     override fun toString(): String {
         return code

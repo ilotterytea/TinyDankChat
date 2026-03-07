@@ -15,6 +15,7 @@ import com.flxrs.dankchat.data.api.helix.dto.UserFollowsDto
 import com.flxrs.dankchat.data.api.seventv.SevenTVApiClient
 import com.flxrs.dankchat.data.api.seventv.eventapi.SevenTVEventApiClient
 import com.flxrs.dankchat.data.api.seventv.eventapi.SevenTVEventMessage
+import com.flxrs.dankchat.data.api.tiny.TinyEmotesApiClient
 import com.flxrs.dankchat.data.api.upload.UploadClient
 import com.flxrs.dankchat.data.repo.RecentUploadsRepository
 import com.flxrs.dankchat.data.repo.emote.EmoteRepository
@@ -50,6 +51,7 @@ class DataRepository(
     private val badgesApiClient: BadgesApiClient,
     private val ffzApiClient: FFZApiClient,
     private val bttvApiClient: BTTVApiClient,
+    private val tinyemotesApiClient: TinyEmotesApiClient,
     private val sevenTVApiClient: SevenTVApiClient,
     private val sevenTVEventApiClient: SevenTVEventApiClient,
     private val uploadClient: UploadClient,
@@ -188,6 +190,36 @@ class DataRepository(
                 .getOrEmitFailure { DataLoadingStep.ChannelBTTVEmotes(channel, channelDisplayName, channelId) }
                 ?.let { emoteRepository.setBTTVEmotes(channel, channelDisplayName, it) }
         }.let { Log.i(TAG, "Loaded BTTV emotes for #$channel in $it ms") }
+    }
+
+    suspend fun loadChannelTinyEmotes(instanceUrl: String, channel: UserName, channelId: UserId) = withContext(Dispatchers.IO) {
+        if (!chatSettingsDataStore.settings
+                .first()
+                .tinyInstances
+                .any { it.url == instanceUrl && it.channelEmotes}) {
+            return@withContext
+        }
+
+        measureTimeMillis {
+            tinyemotesApiClient.getTinyUser(instanceUrl, channelId)
+                .getOrEmitFailure { DataLoadingStep.ChannelTinyEmotes(instanceUrl, channel, channelId) }
+                ?.let { emoteRepository.setTinyEmotes(instanceUrl, channel, it.data) }
+        }.let { Log.i(TAG, "Loaded $instanceUrl emotes for #$channel in $it ms") }
+    }
+
+    suspend fun loadGlobalTinyEmotes(instanceUrl: String) = withContext(Dispatchers.IO) {
+        if (!chatSettingsDataStore.settings
+                .first()
+                .tinyInstances
+                .any { it.url == instanceUrl && it.globalEmotes}) {
+            return@withContext
+        }
+
+        measureTimeMillis {
+            tinyemotesApiClient.getTinyGlobalEmoteset(instanceUrl)
+                .getOrEmitFailure { DataLoadingStep.GlobalTinyEmotes }
+                ?.let { emoteRepository.setTinyGlobalEmotes(instanceUrl, it.data) }
+        }.let { Log.i(TAG, "Loaded global $instanceUrl emotes in $it ms") }
     }
 
     suspend fun loadChannelSevenTVEmotes(channel: UserName, channelId: UserId) = withContext(Dispatchers.IO) {

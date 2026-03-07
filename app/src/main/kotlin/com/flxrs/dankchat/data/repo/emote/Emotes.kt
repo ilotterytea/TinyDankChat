@@ -10,15 +10,19 @@ data class Emotes(
     val bttvGlobalEmotes: List<GenericEmote> = emptyList(),
     val sevenTvChannelEmotes: List<GenericEmote> = emptyList(),
     val sevenTvGlobalEmotes: List<GenericEmote> = emptyList(),
+    val tinyChannelEmotes: Map<String, List<GenericEmote>> = emptyMap(),
+    val tinyGlobalEmotes: Map<String, List<GenericEmote>> = emptyMap(),
 ) {
 
     val sorted: List<GenericEmote> = buildList {
         addAll(twitchEmotes)
 
+        tinyChannelEmotes.forEach { (_, emotes) -> addAll(emotes) }
         addAll(ffzChannelEmotes)
         addAll(bttvChannelEmotes)
         addAll(sevenTvChannelEmotes)
 
+        tinyGlobalEmotes.forEach { (_, emotes) -> addAll(emotes) }
         addAll(ffzGlobalEmotes)
         addAll(bttvGlobalEmotes)
         addAll(sevenTvGlobalEmotes)

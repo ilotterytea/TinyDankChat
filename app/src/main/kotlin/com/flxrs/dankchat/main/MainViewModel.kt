@@ -105,7 +105,7 @@ class MainViewModel(
     private val appearanceSettingsDataStore: AppearanceSettingsDataStore,
     private val streamsSettingsDataStore: StreamsSettingsDataStore,
     private val getChannelsUseCase: GetChannelsUseCase,
-    chatSettingsDataStore: ChatSettingsDataStore,
+    private val chatSettingsDataStore: ChatSettingsDataStore,
 ) : ViewModel() {
 
     private var fetchTimerJob: Job? = null
@@ -342,6 +342,7 @@ class MainViewModel(
                     is EmoteType.ChannelTwitchBitEmote,
                     is EmoteType.ChannelTwitchFollowerEmote -> EmoteMenuTab.SUBS
 
+                    is EmoteType.ChannelTinyEmote,
                     is EmoteType.ChannelFFZEmote,
                     is EmoteType.ChannelBTTVEmote,
                     is EmoteType.ChannelSevenTVEmote        -> EmoteMenuTab.CHANNEL
@@ -451,6 +452,13 @@ class MainViewModel(
                 async { dataRepository.loadGlobalBTTVEmotes() },
                 async { dataRepository.loadGlobalFFZEmotes() },
                 async { dataRepository.loadGlobalSevenTVEmotes() },
+                async { chatSettingsDataStore.tinyEmoteInstances.collect { list -> async {
+                    list.forEach { i -> async {
+                        if (i.globalEmotes) {
+                            dataRepository.loadGlobalTinyEmotes(i.url)
+                        }
+                    }}
+                } }},
                 *channels.flatMap { (channelId, channel, channelDisplayName) ->
                     chatRepository.createFlowsIfNecessary(channel)
                     listOf(
@@ -458,6 +466,13 @@ class MainViewModel(
                         async { dataRepository.loadChannelBTTVEmotes(channel, channelDisplayName, channelId) },
                         async { dataRepository.loadChannelFFZEmotes(channel, channelId) },
                         async { dataRepository.loadChannelSevenTVEmotes(channel, channelId) },
+                        async { chatSettingsDataStore.tinyEmoteInstances.collect { list -> async {
+                            list.forEach { i -> async {
+                                if (i.channelEmotes) {
+                                    dataRepository.loadChannelTinyEmotes(i.url, channel, channelId)
+                                }
+                            }}
+                        } }},
                         async { chatRepository.loadRecentMessagesIfEnabled(channel) },
                     )
                 }.toTypedArray()
@@ -487,12 +502,18 @@ class MainViewModel(
                 async {
                     Log.d(TAG, "Retrying data loading step: $it")
                     when (it.step) {
+                        is DataLoadingStep.GlobalTinyEmotes    -> {
+                            chatSettingsDataStore.tinyEmoteInstances.collect { l -> l.forEach { i -> dataRepository.loadGlobalTinyEmotes(i.url) } }
+                        }
                         is DataLoadingStep.GlobalSevenTVEmotes  -> dataRepository.loadGlobalSevenTVEmotes()
                         is DataLoadingStep.GlobalBTTVEmotes     -> dataRepository.loadGlobalBTTVEmotes()
                         is DataLoadingStep.GlobalFFZEmotes      -> dataRepository.loadGlobalFFZEmotes()
                         is DataLoadingStep.GlobalBadges         -> dataRepository.loadGlobalBadges()
                         is DataLoadingStep.DankChatBadges       -> dataRepository.loadDankChatBadges()
                         is DataLoadingStep.ChannelBadges        -> dataRepository.loadChannelBadges(it.step.channel, it.step.channelId)
+                        is DataLoadingStep.ChannelTinyEmotes    -> {
+                            chatSettingsDataStore.tinyEmoteInstances.collect { l -> l.forEach { i -> dataRepository.loadChannelTinyEmotes(i.url, it.step.channel, it.step.channelId) } }
+                        }
                         is DataLoadingStep.ChannelSevenTVEmotes -> dataRepository.loadChannelSevenTVEmotes(it.step.channel, it.step.channelId)
                         is DataLoadingStep.ChannelFFZEmotes     -> dataRepository.loadChannelFFZEmotes(it.step.channel, it.step.channelId)
                         is DataLoadingStep.ChannelBTTVEmotes    -> dataRepository.loadChannelBTTVEmotes(it.step.channel, it.step.channelDisplayName, it.step.channelId)
@@ -818,6 +839,7 @@ class MainViewModel(
         dataFailures.forEach {
             val status = (it.failure as? ApiException)?.status?.value?.toString() ?: "0"
             when (it.step) {
+                is DataLoadingStep.ChannelTinyEmotes    -> chatRepository.makeAndPostSystemMessage(SystemMessageType.ChannelTinyEmotesFailed(it.step.instanceUrl, status), it.step.channel)
                 is DataLoadingStep.ChannelSevenTVEmotes -> chatRepository.makeAndPostSystemMessage(SystemMessageType.ChannelSevenTVEmotesFailed(status), it.step.channel)
                 is DataLoadingStep.ChannelBTTVEmotes    -> chatRepository.makeAndPostSystemMessage(ChannelBTTVEmotesFailed(status), it.step.channel)
                 is DataLoadingStep.ChannelFFZEmotes     -> chatRepository.makeAndPostSystemMessage(ChannelFFZEmotesFailed(status), it.step.channel)

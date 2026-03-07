@@ -6,6 +6,7 @@ import com.flxrs.dankchat.R
 import com.flxrs.dankchat.data.DisplayName
 import com.flxrs.dankchat.data.twitch.emote.ChatMessageEmote
 import com.flxrs.dankchat.data.twitch.emote.ChatMessageEmoteType
+import com.flxrs.dankchat.data.repo.emote.withLeadingHttps
 import org.koin.android.annotation.KoinViewModel
 
 @KoinViewModel
@@ -23,6 +24,7 @@ class EmoteSheetViewModel(savedStateHandle: SavedStateHandle) : ViewModel() {
             providerUrl = emote.providerUrlOrNull(),
             isZeroWidth = emote.isOverlayEmote,
             emoteType = emote.emoteTypeOrNull(),
+            instanceUrl = emote.instanceUrl
         )
     }
 
@@ -30,6 +32,8 @@ class EmoteSheetViewModel(savedStateHandle: SavedStateHandle) : ViewModel() {
         return when (type) {
             is ChatMessageEmoteType.GlobalSevenTVEmote  -> type.baseName
             is ChatMessageEmoteType.ChannelSevenTVEmote -> type.baseName
+            is ChatMessageEmoteType.GlobalTinyEmote     -> type.baseName
+            is ChatMessageEmoteType.ChannelTinyEmote    -> type.baseName
             else                                        -> null
         }
     }
@@ -41,6 +45,8 @@ class EmoteSheetViewModel(savedStateHandle: SavedStateHandle) : ViewModel() {
             is ChatMessageEmoteType.ChannelBTTVEmote    -> type.creator
             is ChatMessageEmoteType.ChannelFFZEmote     -> type.creator
             is ChatMessageEmoteType.GlobalFFZEmote      -> type.creator
+            is ChatMessageEmoteType.ChannelTinyEmote    -> type.creator
+            is ChatMessageEmoteType.GlobalTinyEmote     -> type.creator
             else                                        -> null
         }
     }
@@ -52,6 +58,9 @@ class EmoteSheetViewModel(savedStateHandle: SavedStateHandle) : ViewModel() {
 
             is ChatMessageEmoteType.ChannelBTTVEmote,
             is ChatMessageEmoteType.GlobalBTTVEmote     -> "$BTTV_BASE_LINK$id"
+
+            is ChatMessageEmoteType.ChannelTinyEmote,
+            is ChatMessageEmoteType.GlobalTinyEmote     -> "${instanceUrl?.withLeadingHttps}$TINY_BASE_LINK$id"
 
             is ChatMessageEmoteType.ChannelFFZEmote,
             is ChatMessageEmoteType.GlobalFFZEmote      -> "$FFZ_BASE_LINK$id-$code"
@@ -65,9 +74,11 @@ class EmoteSheetViewModel(savedStateHandle: SavedStateHandle) : ViewModel() {
             is ChatMessageEmoteType.ChannelBTTVEmote    -> if (type.isShared) R.string.emote_sheet_bttv_shared_emote else R.string.emote_sheet_bttv_channel_emote
             is ChatMessageEmoteType.ChannelFFZEmote     -> R.string.emote_sheet_ffz_channel_emote
             is ChatMessageEmoteType.ChannelSevenTVEmote -> R.string.emote_sheet_seventv_channel_emote
+            is ChatMessageEmoteType.ChannelTinyEmote     -> R.string.emote_sheet_tiny_channel_emote
             ChatMessageEmoteType.GlobalBTTVEmote        -> R.string.emote_sheet_bttv_global_emote
             is ChatMessageEmoteType.GlobalFFZEmote      -> R.string.emote_sheet_ffz_global_emote
             is ChatMessageEmoteType.GlobalSevenTVEmote  -> R.string.emote_sheet_seventv_global_emote
+            is ChatMessageEmoteType.GlobalTinyEmote     -> R.string.emote_sheet_tiny_global_emote
             ChatMessageEmoteType.TwitchEmote            -> R.string.emote_sheet_twitch_emote
         }
     }
@@ -77,5 +88,6 @@ class EmoteSheetViewModel(savedStateHandle: SavedStateHandle) : ViewModel() {
         private const val FFZ_BASE_LINK = "https://www.frankerfacez.com/emoticon/"
         private const val BTTV_BASE_LINK = "https://betterttv.com/emotes/"
         private const val TWITCH_BASE_LINK = "https://chatvau.lt/emote/twitch/"
+        private const val TINY_BASE_LINK = "/emotes/?id="
     }
 }

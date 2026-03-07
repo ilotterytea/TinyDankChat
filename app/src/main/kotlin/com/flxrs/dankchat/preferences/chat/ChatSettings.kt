@@ -28,6 +28,7 @@ data class ChatSettings(
     val loadMessageHistoryOnReconnect: Boolean = true,
     val showChatModes: Boolean = true,
     val sharedChatMigration: Boolean = false,
+    val tinyInstances: List<TinyInstance> = emptyList()
 ) {
 
     @Transient
@@ -43,6 +44,9 @@ data class ChatSettings(
 
 @Serializable
 data class CustomCommand(val trigger: String, val command: String, @Transient val id: String = Uuid.random().toString())
+
+@Serializable
+data class TinyInstance(val url: String, val channelEmotes: Boolean, val globalEmotes: Boolean)
 
 enum class UserLongClickBehavior {
     MentionsUser,

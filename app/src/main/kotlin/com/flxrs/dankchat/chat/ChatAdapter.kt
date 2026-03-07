@@ -296,6 +296,7 @@ class ChatAdapter(
             is SystemMessageType.ChannelBTTVEmotesFailed       -> context.getString(R.string.system_message_bttv_emotes_failed, message.type.status)
             is SystemMessageType.ChannelFFZEmotesFailed        -> context.getString(R.string.system_message_ffz_emotes_failed, message.type.status)
             is SystemMessageType.ChannelSevenTVEmotesFailed    -> context.getString(R.string.system_message_7tv_emotes_failed, message.type.status)
+            is SystemMessageType.ChannelTinyEmotesFailed       -> context.getString(R.string.system_message_tiny_emotes_failed, message.type.instanceUrl, message.type.status)
             is SystemMessageType.Custom                        -> message.type.message
             is SystemMessageType.MessageHistoryUnavailable     -> when (message.type.status) {
                 null -> context.getString(R.string.system_message_history_unavailable)

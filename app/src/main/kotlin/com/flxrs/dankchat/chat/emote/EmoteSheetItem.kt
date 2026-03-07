@@ -12,4 +12,5 @@ data class EmoteSheetItem(
     val providerUrl: String,
     val isZeroWidth: Boolean,
     val creatorName: DisplayName?,
+    val instanceUrl: String?
 )

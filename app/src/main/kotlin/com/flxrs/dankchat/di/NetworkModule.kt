@@ -11,6 +11,7 @@ import com.flxrs.dankchat.data.api.helix.HelixApi
 import com.flxrs.dankchat.data.api.recentmessages.RecentMessagesApi
 import com.flxrs.dankchat.data.api.seventv.SevenTVApi
 import com.flxrs.dankchat.data.api.supibot.SupibotApi
+import com.flxrs.dankchat.data.api.tiny.TinyEmotesApi
 import com.flxrs.dankchat.preferences.DankChatPreferenceStore
 import com.flxrs.dankchat.preferences.developer.DeveloperSettingsDataStore
 import io.ktor.client.HttpClient
@@ -140,6 +141,13 @@ class NetworkModule {
     fun provideBTTVApi(ktorClient: HttpClient) = BTTVApi(ktorClient.config {
         defaultRequest {
             url(BTTV_BASE_URL)
+        }
+    })
+
+    @Single
+    fun provideTinyApi(ktorClient: HttpClient) = TinyEmotesApi(ktorClient.config {
+        defaultRequest {
+            url()
         }
     })
 

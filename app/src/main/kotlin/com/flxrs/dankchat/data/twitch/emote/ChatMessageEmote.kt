@@ -10,6 +10,7 @@ import kotlinx.parcelize.TypeParceler
 data class ChatMessageEmote(
     val position: IntRange,
     val url: String,
+    val instanceUrl: String?,
     val id: String,
     val code: String,
     val scale: Int,

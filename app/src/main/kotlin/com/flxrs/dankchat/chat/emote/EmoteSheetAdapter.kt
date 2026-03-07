@@ -37,7 +37,11 @@ class EmoteSheetAdapter(
             emoteImage.setOnClickListener { onImageClick(emote) }
             emoteName.text = emote.name
             emoteType.text = buildString {
-                append(root.context.getString(emote.emoteType))
+                if (emote.instanceUrl != null) {
+                    append(root.context.getString(emote.emoteType, emote.instanceUrl))
+                } else {
+                    append(root.context.getString(emote.emoteType))
+                }
                 if (emote.isZeroWidth) {
                     append(" ")
                     append(root.context.getString(R.string.emote_sheet_zero_width_emote))

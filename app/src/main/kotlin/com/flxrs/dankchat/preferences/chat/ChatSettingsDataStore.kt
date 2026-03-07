@@ -163,6 +163,11 @@ class ChatSettingsDataStore(
         .distinctUntilChanged()
         .debounce(2.seconds)
 
+    val tinyEmoteInstances = settings
+        .map { it.tinyInstances }
+        .distinctUntilChanged()
+        .debounce(2.seconds)
+
     val restartChat = settings.distinctUntilChanged { old, new ->
         old.showTimestamps != new.showTimestamps ||
                 old.timestampFormat != new.timestampFormat ||

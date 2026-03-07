@@ -25,6 +25,9 @@ import com.flxrs.dankchat.data.api.seventv.dto.SevenTVEmoteSetDto
 import com.flxrs.dankchat.data.api.seventv.dto.SevenTVUserConnection
 import com.flxrs.dankchat.data.api.seventv.dto.SevenTVUserDto
 import com.flxrs.dankchat.data.api.seventv.eventapi.SevenTVEventMessage
+import com.flxrs.dankchat.data.api.tiny.dto.TinyEmoteDto
+import com.flxrs.dankchat.data.api.tiny.dto.TinyEmotesetDto
+import com.flxrs.dankchat.data.api.tiny.dto.TinyUserDto
 import com.flxrs.dankchat.data.repo.channel.ChannelRepository
 import com.flxrs.dankchat.data.repo.chat.ChatRepository
 import com.flxrs.dankchat.data.toUserId
@@ -100,11 +103,13 @@ class EmoteRepository(
                 addAll(available.ffzChannelEmotes.flatMap { parseMessageForEmote(it, splits) })
                 addAll(available.bttvChannelEmotes.flatMap { parseMessageForEmote(it, splits) })
                 addAll(available.sevenTvChannelEmotes.flatMap { parseMessageForEmote(it, splits) })
+                addAll(available.tinyChannelEmotes.flatMap { (_, list) -> list.flatMap { parseMessageForEmote(it, splits) } })
             }
 
             addAll(available.ffzGlobalEmotes.flatMap { parseMessageForEmote(it, splits) })
             addAll(available.bttvGlobalEmotes.flatMap { parseMessageForEmote(it, splits) })
             addAll(available.sevenTvGlobalEmotes.flatMap { parseMessageForEmote(it, splits) })
+            addAll(available.tinyGlobalEmotes.flatMap { (_, list) -> list.flatMap { parseMessageForEmote(it, splits) } })
         }.distinctBy { it.code to it.position }
     }
 
@@ -457,6 +462,30 @@ class EmoteRepository(
         }
     }
 
+    suspend fun setTinyEmotes(instanceUrl: String, channel: UserName, tinyResult: TinyUserDto) = withContext(Dispatchers.Default) {
+        val tinyEmotes = tinyResult.emoteSets.find { it.id == tinyResult.activeEmoteSetId }?.emotes?.map {
+            val creator = DisplayName(it.uploadedBy?.username ?: "Anonymous*")
+            parseTinyEmote(instanceUrl, it, EmoteType.ChannelTinyEmote(instanceUrl, creator, it.originalCode))
+        }
+
+        emotes[channel]?.update {
+            it.copy(tinyChannelEmotes = it.tinyChannelEmotes + mapOf(instanceUrl to tinyEmotes.orEmpty()))
+        }
+    }
+
+    suspend fun setTinyGlobalEmotes(instanceUrl: String, emoteSet: TinyEmotesetDto) = withContext(Dispatchers.Default) {
+        val tinyGlobalEmotes = emoteSet.emotes.map {
+            val creator = DisplayName(it.uploadedBy?.username ?: "Anonymous*")
+            parseTinyEmote(instanceUrl, it, EmoteType.GlobalTinyEmote(instanceUrl, creator, it.originalCode))
+        }
+
+        emotes.values.forEach { flow ->
+            flow.update {
+                it.copy(tinyGlobalEmotes = it.tinyGlobalEmotes + mapOf(instanceUrl to tinyGlobalEmotes))
+            }
+        }
+    }
+
     private val UserName?.twitchEmoteType: EmoteType
         get() = when {
             this == null || isGlobalTwitchChannel -> EmoteType.GlobalTwitchEmote
@@ -552,7 +581,8 @@ class EmoteRepository(
                         code = emote.code,
                         scale = emote.scale,
                         type = emote.emoteType.toChatMessageEmoteType() ?: ChatMessageEmoteType.TwitchEmote,
-                        isOverlayEmote = emote.isOverlayEmote
+                        isOverlayEmote = emote.isOverlayEmote,
+                        instanceUrl = emote.instanceUrl
                     )
                 }
                 currentPosition += word.length + 1
@@ -585,7 +615,8 @@ class EmoteRepository(
                 code = code,
                 scale = 1,
                 type = ChatMessageEmoteType.TwitchEmote,
-                isTwitch = true
+                isTwitch = true,
+                instanceUrl = null
             )
         }
     }
@@ -680,11 +711,21 @@ class EmoteRepository(
         else                                                       -> filter { it.data?.listed == true }
     }
 
-    private val String.withLeadingHttps: String
-        get() = when {
-            startsWith(prefix = "https:") -> this
-            else                          -> "https:$this"
-        }
+    private fun parseTinyEmote(instanceUrl: String, emote: TinyEmoteDto, type: EmoteType): GenericEmote {
+        val name = emote.code
+        val id = emote.id
+        val url = TINY_EMOTE_TEMPLATE.format(instanceUrl.withLeadingHttps, id, TINY_EMOTE_SIZE, emote.ext)
+        val lowResUrl = TINY_EMOTE_TEMPLATE.format(instanceUrl.withLeadingHttps, id, TINY_LOW_RES_EMOTE_SIZE, emote.ext)
+        return GenericEmote(
+            code = name,
+            url = url,
+            lowResUrl = lowResUrl,
+            id = id,
+            scale = 1,
+            emoteType = type,
+            instanceUrl = instanceUrl
+        )
+    }
 
     companion object {
         private val SUPPORTS_WEBP = Build.VERSION.SDK_INT >= Build.VERSION_CODES.P
@@ -700,6 +741,10 @@ class EmoteRepository(
         private const val BTTV_EMOTE_TEMPLATE = "https://cdn.betterttv.net/emote/%s/%s"
         private const val BTTV_EMOTE_SIZE = "3x"
         private const val BTTV_LOW_RES_EMOTE_SIZE = "2x"
+
+        private const val TINY_EMOTE_TEMPLATE = "%s/static/userdata/emotes/%s/%s.%s"
+        private const val TINY_EMOTE_SIZE = "3x"
+        private const val TINY_LOW_RES_EMOTE_SIZE = "2x"
 
         private val WHITESPACE_REGEX = "\\s".toRegex()
         private val EMOTE_REPLACEMENTS = mapOf(
@@ -729,5 +774,12 @@ class EmoteRepository(
         )
     }
 }
+
+val String.withLeadingHttps: String
+    get() = when {
+        startsWith(prefix = "https://") -> this
+        startsWith(prefix = "//") -> "https:${this}"
+        else                          -> "https://$this"
+    }
 
 private operator fun IntRange.inc() = first + 1..last + 1

@@ -117,6 +117,7 @@ data class ChatSettingsState(
     val loadMessageHistoryAfterReconnect: Boolean,
     val messageHistoryDashboardUrl: String,
     val showChatModes: Boolean,
+    val tinyInstances: ImmutableList<TinyInstance>
 )
 
 private fun ChatSettings.toState() = ChatSettingsState(
@@ -140,6 +141,7 @@ private fun ChatSettings.toState() = ChatSettingsState(
     loadMessageHistoryAfterReconnect = loadMessageHistoryOnReconnect,
     messageHistoryDashboardUrl = RECENT_MESSAGES_DASHBOARD,
     showChatModes = showChatModes,
+    tinyInstances = tinyInstances.toImmutableList()
 )
 
 private const val RECENT_MESSAGES_DASHBOARD = "https://recent-messages.robotty.de"

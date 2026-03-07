@@ -22,6 +22,7 @@ sealed interface SystemMessageType {
     data class ChannelSevenTVEmoteAdded(val actorName: DisplayName, val emoteName: String) : SystemMessageType
     data class ChannelSevenTVEmoteRenamed(val actorName: DisplayName, val oldEmoteName: String, val emoteName: String) : SystemMessageType
     data class ChannelSevenTVEmoteRemoved(val actorName: DisplayName, val emoteName: String) : SystemMessageType
+    data class ChannelTinyEmotesFailed(val instanceUrl: String, val status: String) : SystemMessageType
     data class Custom(val message: String) : SystemMessageType
 }
 
