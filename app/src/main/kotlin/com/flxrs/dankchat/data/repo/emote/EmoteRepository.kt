@@ -210,7 +210,7 @@ class EmoteRepository(
             }.orEmpty()
 
         val sharedChatBadge = getSharedChatBadge(message)
-        val allBadges = buildList {
+        var allBadges = buildList {
             if (sharedChatBadge != null) {
                 add(sharedChatBadge)
             }
@@ -222,7 +222,12 @@ class EmoteRepository(
         }
 
         return when (message) {
-            is PrivMessage       -> message.copy(badges = allBadges)
+            is PrivMessage       -> {
+                if (message.encrypted) {
+                    allBadges = listOf(Badge.EncryptedBadge()) + allBadges
+                }
+                message.copy(badges = allBadges)
+            }
             is WhisperMessage    -> message.copy(badges = allBadges)
             is UserNoticeMessage -> message.copy(
                 childMessage = message.childMessage?.copy(badges = allBadges)

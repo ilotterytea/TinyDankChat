@@ -718,6 +718,11 @@ class ChatAdapter(
                                         .data(R.drawable.shared_chat)
                                         .build()
                                 }
+                                is Badge.EncryptedBadge if badge.url.isEmpty() -> {
+                                    ImageRequest.Builder(context)
+                                        .data(R.drawable.encrypted)
+                                        .build()
+                                }
 
                                 else                                            -> badge.url.toRequest(context, circleCrop = badge is Badge.SharedChatBadge)
                             }
