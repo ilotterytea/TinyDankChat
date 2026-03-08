@@ -46,7 +46,7 @@ data class ChatSettings(
 data class CustomCommand(val trigger: String, val command: String, @Transient val id: String = Uuid.random().toString())
 
 @Serializable
-data class TinyInstance(val url: String, val channelEmotes: Boolean, val globalEmotes: Boolean)
+data class TinyInstance(@Transient val id: String = Uuid.random().toString(), val url: String, val channelEmotes: Boolean, val globalEmotes: Boolean)
 
 enum class UserLongClickBehavior {
     MentionsUser,

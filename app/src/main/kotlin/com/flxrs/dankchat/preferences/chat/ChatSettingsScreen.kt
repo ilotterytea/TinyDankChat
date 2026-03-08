@@ -38,6 +38,7 @@ import androidx.compose.ui.res.stringArrayResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.Dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.navigation.compose.rememberNavController
 import com.flxrs.dankchat.R
 import com.flxrs.dankchat.preferences.components.NavigationBarSpacer
 import com.flxrs.dankchat.preferences.components.PreferenceCategory
@@ -57,6 +58,7 @@ import kotlin.math.roundToInt
 fun ChatSettingsScreen(
     onNavToCommands: () -> Unit,
     onNavToUserDisplays: () -> Unit,
+    onNavToInstances: () -> Unit,
     onNavBack: () -> Unit,
 ) {
     val viewModel = koinViewModel<ChatSettingsViewModel>()
@@ -89,6 +91,7 @@ fun ChatSettingsScreen(
         onInteraction = { viewModel.onInteraction(it) },
         onNavToCommands = onNavToCommands,
         onNavToUserDisplays = onNavToUserDisplays,
+        onNavToInstances = onNavToInstances,
         onNavBack = onNavBack,
     )
 }
@@ -100,6 +103,7 @@ private fun ChatSettingsScreen(
     onInteraction: (ChatSettingsInteraction) -> Unit,
     onNavToCommands: () -> Unit,
     onNavToUserDisplays: () -> Unit,
+    onNavToInstances: () -> Unit,
     onNavBack: () -> Unit,
 ) {
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
@@ -150,6 +154,11 @@ private fun ChatSettingsScreen(
                 sevenTVLiveEmoteUpdates = settings.sevenTVLiveEmoteUpdates,
                 sevenTVLiveEmoteUpdatesBehavior = settings.sevenTVLiveEmoteUpdatesBehavior,
                 onInteraction = onInteraction,
+            )
+            HorizontalDivider(thickness = Dp.Hairline)
+            TinyCategory(
+                onInteraction = onInteraction,
+                onNavToInstances = onNavToInstances
             )
             HorizontalDivider(thickness = Dp.Hairline)
             MessageHistoryCategory(
@@ -290,6 +299,18 @@ private fun GeneralCategory(
             values = VisibleThirdPartyEmotes.entries.toImmutableList(),
             entries = stringArrayResource(R.array.emotes_entries).toImmutableList(),
             onChanged = { onInteraction(ChatSettingsInteraction.Emotes(it)) },
+        )
+    }
+}
+
+@Composable
+private fun TinyCategory(onInteraction: (ChatSettingsInteraction) -> Unit, onNavToInstances: () -> Unit) {
+    PreferenceCategory(title = stringResource(R.string.preference_tiny_category_title)) {
+        PreferenceItem(
+            title = stringResource(R.string.tiny_instances),
+            summary = stringResource(R.string.tiny_instances_summary),
+            onClick = onNavToInstances,
+            trailingIcon = Icons.AutoMirrored.Filled.ArrowForward,
         )
     }
 }

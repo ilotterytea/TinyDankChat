@@ -17,6 +17,7 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.findNavController
 import com.flxrs.dankchat.preferences.chat.commands.CustomCommandsScreen
 import com.flxrs.dankchat.preferences.chat.userdisplay.UserDisplayScreen
+import com.flxrs.dankchat.preferences.chat.instances.InstancesScreen
 import com.flxrs.dankchat.theme.DankChatTheme
 import com.google.android.material.transition.MaterialFadeThrough
 
@@ -52,11 +53,17 @@ class ChatSettingsFragment : Fragment() {
                             ChatSettingsScreen(
                                 onNavToCommands = { navController.navigate(ChatSettingsRoute.Commands) },
                                 onNavToUserDisplays = { navController.navigate(ChatSettingsRoute.UserDisplay) },
+                                onNavToInstances = { navController.navigate(ChatSettingsRoute.TinyInstances)},
                                 onNavBack = { findNavController().popBackStack() },
                             )
                         }
                         composable<ChatSettingsRoute.Commands> {
                             CustomCommandsScreen(
+                                onNavBack = { navController.popBackStack() },
+                            )
+                        }
+                        composable<ChatSettingsRoute.TinyInstances> {
+                            InstancesScreen(
                                 onNavBack = { navController.popBackStack() },
                             )
                         }

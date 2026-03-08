@@ -11,4 +11,7 @@ sealed interface ChatSettingsRoute {
 
     @Serializable
     data object UserDisplay : ChatSettingsRoute
+
+    @Serializable
+    data object TinyInstances : ChatSettingsRoute
 }
