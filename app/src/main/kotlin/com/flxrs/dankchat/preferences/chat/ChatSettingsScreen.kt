@@ -1,13 +1,17 @@
 package com.flxrs.dankchat.preferences.chat
 
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.exclude
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -15,6 +19,9 @@ import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.ScaffoldDefaults
 import androidx.compose.material3.SnackbarDuration
@@ -22,24 +29,32 @@ import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.stringArrayResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.navigation.compose.rememberNavController
 import com.flxrs.dankchat.R
+import com.flxrs.dankchat.chat.ChatEncryption
+import com.flxrs.dankchat.preferences.components.ExpandablePreferenceItem
 import com.flxrs.dankchat.preferences.components.NavigationBarSpacer
 import com.flxrs.dankchat.preferences.components.PreferenceCategory
 import com.flxrs.dankchat.preferences.components.PreferenceItem
@@ -171,6 +186,14 @@ private fun ChatSettingsScreen(
             ChannelDataCategory(
                 showChatModes = settings.showChatModes,
                 onInteraction = onInteraction,
+            )
+            HorizontalDivider(thickness = Dp.Hairline)
+            EncryptionCategory(
+                enableMessageEncryption = settings.enableMessageEncryption,
+                randomSpaces = settings.randomEncryptedSpaces,
+                encryptionPassword = settings.encryptionPassword,
+                encryptionEncoding = settings.encryptionEncoding,
+                onInteraction = onInteraction
             )
             NavigationBarSpacer()
         }
@@ -316,6 +339,47 @@ private fun TinyCategory(onInteraction: (ChatSettingsInteraction) -> Unit, onNav
 }
 
 @Composable
+private fun EncryptionCategory(
+    enableMessageEncryption: Boolean,
+    randomSpaces: Boolean,
+    encryptionEncoding: ChatEncryption.Encoding,
+    encryptionPassword: String,
+    onInteraction: (ChatSettingsInteraction) -> Unit
+) {
+    PreferenceCategory(title = stringResource(R.string.preference_encryption_category_title)) {
+        SwitchPreferenceItem(
+            title = stringResource(R.string.preference_enable_message_encryption),
+            summary = stringResource(R.string.preference_enable_message_encryption_summary),
+            isChecked = enableMessageEncryption,
+            onClick = { onInteraction(ChatSettingsInteraction.EnableMessageEncryption(it)) },
+        )
+        SwitchPreferenceItem(
+            title = stringResource(R.string.preference_add_random_spaces),
+            summary = stringResource(R.string.preference_add_random_spaces_summary),
+            isChecked = randomSpaces,
+            onClick = { onInteraction(ChatSettingsInteraction.RandomEncryptedSpaces(it)) },
+        )
+        PreferenceListDialog(
+            title = stringResource(R.string.preference_encryption_encoding),
+            summary = encryptionEncoding.name,
+            values = ChatEncryption.Encoding.entries.toImmutableList(),
+            entries = ChatEncryption.Encoding.entries.map { it.name }.toImmutableList(),
+            selected = encryptionEncoding,
+            onChanged = { onInteraction(ChatSettingsInteraction.EncryptionEncoding(it)) },
+        )
+        ExpandablePreferenceItem(title = stringResource(R.string.preference_encryption_password)) {
+            EncryptionPasswordBottomSheet(
+                initialPassword = encryptionPassword,
+                onInteraction = {
+                    dismiss()
+                    onInteraction(it)
+                },
+            )
+        }
+    }
+}
+
+@Composable
 private fun SevenTVCategory(
     enabled: Boolean,
     allowUnlistedSevenTvEmotes: Boolean,
@@ -395,5 +459,46 @@ private fun ChannelDataCategory(
             isChecked = showChatModes,
             onClick = { onInteraction(ChatSettingsInteraction.ChatModes(it)) },
         )
+    }
+}
+
+
+@Composable
+private fun EncryptionPasswordBottomSheet(
+    initialPassword: String,
+    onInteraction: (ChatSettingsInteraction) -> Unit,
+) {
+    var password by remember(initialPassword) { mutableStateOf(initialPassword) }
+    ModalBottomSheet(onDismissRequest = { onInteraction(ChatSettingsInteraction.EncryptionPassword(password)) }) {
+        Text(
+            text = stringResource(R.string.preference_encryption_password),
+            textAlign = TextAlign.Center,
+            style = MaterialTheme.typography.titleLarge,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(start = 16.dp, end = 16.dp, bottom = 16.dp),
+        )
+        TextButton(
+            onClick = { password = "CHANGE_THIS" },
+            content = { Text(stringResource(R.string.reset)) },
+            modifier = Modifier
+                .align(Alignment.End)
+                .padding(horizontal = 16.dp),
+        )
+        OutlinedTextField(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp),
+            value = password,
+            onValueChange = { password = it },
+            label = { Text(stringResource(R.string.preference_encryption_password)) },
+            maxLines = 1,
+            keyboardOptions = KeyboardOptions(
+                imeAction = ImeAction.Done,
+                autoCorrectEnabled = false,
+                keyboardType = KeyboardType.Uri,
+            ),
+        )
+        Spacer(Modifier.height(64.dp))
     }
 }

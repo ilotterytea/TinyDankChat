@@ -278,11 +278,18 @@ class MainViewModel(
         isUploading || isDataLoading
     }.stateIn(viewModelScope, started = SharingStarted.WhileSubscribed(stopTimeout = 5.seconds), false)
 
-    val inputState: StateFlow<InputState> = combine(connectionState, fullScreenSheetState, inputSheetState) { connectionState, chatSheetState, inputSheetState ->
+    val inputState: StateFlow<InputState> = combine(
+        connectionState,
+        fullScreenSheetState,
+        inputSheetState,
+        chatSettingsDataStore.enableMessageEncryption,
+        chatSettingsDataStore.encryptOnSend
+    ) { connectionState, chatSheetState, inputSheetState, enableMessageEncryption, encryptOnSend ->
         val inputIsReply = inputSheetState is InputSheetState.Replying || (inputSheetState as? InputSheetState.Emotes)?.previousReply != null
         when (connectionState) {
             ConnectionState.CONNECTED               -> when {
                 chatSheetState is FullScreenSheetState.Replies || inputIsReply -> InputState.Replying
+                enableMessageEncryption && encryptOnSend                       -> InputState.Encrypted
                 else                                                           -> InputState.Default
             }
 
@@ -382,6 +389,14 @@ class MainViewModel(
         ) { canShowChips, activeChannel, currentStream, streamData ->
             canShowChips && activeChannel != null && (currentStream != null || streamData.find { it.channel == activeChannel } != null)
         }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(stopTimeout = 5.seconds), false)
+
+    val shouldShowEncryptOnSend: StateFlow<Boolean> =
+        combine(
+            shouldShowExpandedChips,
+            chatSettingsDataStore.enableMessageEncryption
+        ) { canShowChips, encryptionEnabled ->
+            canShowChips && encryptionEnabled
+        }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(stopTimeout = 1.seconds), false)
 
     val hasModInChannel: StateFlow<Boolean> =
         combine(shouldShowExpandedChips, activeChannel, userStateRepository.userState) { canShowChips, channel, userState ->
@@ -791,6 +806,12 @@ class MainViewModel(
     fun toggleInput() {
         viewModelScope.launch {
             appearanceSettingsDataStore.update { it.copy(showInput = !it.showInput) }
+        }
+    }
+
+    fun toggleEncryption() {
+        viewModelScope.launch {
+            chatSettingsDataStore.update { it.copy(encryptOnSend = !it.encryptOnSend) }
         }
     }
 

@@ -133,6 +133,8 @@ import com.google.android.material.snackbar.BaseTransientBottomBar.BaseCallback
 import com.google.android.material.snackbar.Snackbar
 import com.google.android.material.tabs.TabLayoutMediator
 import com.google.android.material.transition.MaterialSharedAxis
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import org.koin.android.ext.android.inject
 import org.koin.androidx.viewmodel.ext.android.activityViewModel
@@ -338,6 +340,7 @@ class MainFragment : Fragment() {
                 root.requestApplyInsets()
             }
             changeRoomstate.setOnClickListener { showRoomStateDialog() }
+            encryptOnSend!!.setOnClickListener { mainViewModel.toggleEncryption() }
             showChips.setOnClickListener { mainViewModel.toggleChipsExpanded() }
             var offset = 0f
             splitThumb?.setOnTouchListener { v, event ->
@@ -414,6 +417,7 @@ class MainFragment : Fragment() {
             collectFlow(inputState) { state ->
                 binding.inputLayout.hint = when (state) {
                     InputState.Default      -> getString(R.string.hint_connected)
+                    InputState.Encrypted    -> getString(R.string.hint_connected_encrypted)
                     InputState.Replying     -> getString(R.string.hint_replying)
                     InputState.NotLoggedIn  -> getString(R.string.hint_not_logged_int)
                     InputState.Disconnected -> getString(R.string.hint_disconnected)
@@ -443,6 +447,7 @@ class MainFragment : Fragment() {
                 binding.toggleInput.isVisible = it
             }
             collectFlow(shouldShowStreamToggle) { binding.toggleStream.isVisible = it }
+            collectFlow(shouldShowEncryptOnSend) { binding.encryptOnSend!!.isVisible = it }
             collectFlow(hasModInChannel) { binding.changeRoomstate.isVisible = it }
             collectFlow(shouldShowViewPager) {
                 binding.chatViewpager.isVisible = it && !isInPictureInPictureMode
