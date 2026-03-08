@@ -2,9 +2,9 @@ name: Android CI
 
 on:
   push:
-    branches: [ master, develop ]
+    branches: [ master, tinydankchat ]
   pull_request:
-    branches: [ master, develop ]
+    branches: [ master, tinydankchat ]
 
 jobs:
   test:
@@ -74,7 +74,7 @@ jobs:
           path: ${{ github.workspace }}/app/build/outputs/apk/debug/*.apk
 
       - name: Update debug tag
-        if: (github.event_name == 'push' && github.ref == 'refs/heads/develop')
+        if: (github.event_name == 'push' && github.ref == 'refs/heads/tinydankchat')
         uses: richardsimko/update-tag@v1.1.6
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -82,7 +82,7 @@ jobs:
           tag_name: debug
 
       - name: Update debug release
-        if: (github.event_name == 'push' && github.ref == 'refs/heads/develop')
+        if: (github.event_name == 'push' && github.ref == 'refs/heads/tinydankchat')
         uses: ncipollo/release-action@v1.20.0
         with:
           tag: debug
@@ -94,7 +94,7 @@ jobs:
     name: Generate signed release apk
     runs-on: ubuntu-latest
     environment: release
-    if: (github.event_name == 'push' && github.ref == 'refs/heads/develop')
+    if: (github.event_name == 'push' && github.ref == 'refs/heads/tinydankchat')
 
     steps:
       - uses: actions/checkout@v6
