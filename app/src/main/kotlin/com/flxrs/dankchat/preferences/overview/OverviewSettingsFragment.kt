@@ -183,6 +183,13 @@ private fun OverviewSettings(
                 ) {
                     val context = LocalContext.current
                     val annotated = buildAnnotatedString {
+                        append(context.getString(R.string.preference_about_fork, BuildConfig.VERSION_NAME))
+                        appendLine()
+                        withLink(link = buildLinkAnnotation(FORK_GITHUB_URL)) {
+                            append(FORK_GITHUB_URL)
+                        }
+                        appendLine()
+                        appendLine()
                         append(context.getString(R.string.preference_about_summary, BuildConfig.VERSION_NAME))
                         appendLine()
                         withLink(link = buildLinkAnnotation(GITHUB_URL)) {
@@ -226,5 +233,6 @@ private fun OverviewSettingsPreview() {
 }
 
 private const val GITHUB_URL = "https://github.com/flex3r/dankchat"
+private const val FORK_GITHUB_URL = "https://github.com/ilotterytea/tinydankchat"
 private const val TWITCH_TOS_URL = "https://www.twitch.tv/p/terms-of-service"
 

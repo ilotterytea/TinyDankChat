@@ -1,12 +1,22 @@
-# <img src="https://user-images.githubusercontent.com/85196642/153115305-e39f854d-6dc9-4975-a60b-653f6ecc87df.png" height="75"> DankChat
+# ![](/icon.png) TinyDankChat
 
-[![Build status](https://github.com/flex3r/DankChat/workflows/Android%20CI/badge.svg)](https://github.com/flex3r/DankChat/actions)  
-[<img src="https://play.google.com/intl/en_us/badges/images/generic/en_badge_web_generic.png" alt="Get it on Google Play" height="80">](https://play.google.com/store/apps/details?id=com.flxrs.dankchat)
-[<img src="https://fdroid.gitlab.io/artwork/badge/get-it-on.png" alt="Get it on F-Droid" height="80">](https://f-droid.org/packages/com.flxrs.dankchat)  
-A signed release version is available [here](https://github.com/flex3r/DankChat/releases/tag/release)  
+[![Build status](https://github.com/ilotterytea/TinyDankChat/workflows/Android%20CI/badge.svg)](https://github.com/ilotterytea/TinyDankChat/actions)  
+<!--[<img src="https://play.google.com/intl/en_us/badges/images/generic/en_badge_web_generic.png" alt="Get it on Google Play" height="80">](https://play.google.com/store/apps/details?id=com.flxrs.dankchat)-->
+<!--[<img src="https://fdroid.gitlab.io/artwork/badge/get-it-on.png" alt="Get it on F-Droid" height="80">](https://f-droid.org/packages/com.flxrs.dankchat)  -->
+
+Based on [DankChat](https://github.com/flex3r/DankChat) made by @flex3rs and contributors
+
+A signed release version is available [here](https://github.com/ilotterytea/TinyDankChat/releases/tag/release)  
 Make sure to click "install anyway" when a Play Protect dialog pops up during installation.   
 
-<img src="fastlane/metadata/android/en-US/images/phoneScreenshots/screen1.png" width="30%"/> <img src="fastlane/metadata/android/en-US/images/phoneScreenshots/screen2.png" width="30%"/> <img src="fastlane/metadata/android/en-US/images/phoneScreenshots/screen4.png" width="30%"/>
+<img src="fastlane/metadata/android/en-US/images/phoneScreenshots/screen1.png" width="30%"/> <img src="fastlane/metadata/android/en-US/images/phoneScreenshots/screen2.png" width="30%"/> <img src="fastlane/metadata/android/en-US/images/phoneScreenshots/screen8.png" width="30%"/>
+<br>
+<img src="fastlane/metadata/android/en-US/images/phoneScreenshots/screen4.png" width="30%"/> <img src="fastlane/metadata/android/en-US/images/phoneScreenshots/screen9.png" width="30%"/>
+
+## Features
+
++ [TinyEmotes](https://github.com/ilotterytea/tinyemotes) support, a self-hosted emote provider
++ Client-side message encryption
 
 ## Localization
 DankChat uses crowdin for translations. Except for strings in the base language, resource strings don't need to be edited anymore.  

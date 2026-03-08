@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="MissingTranslation">
-    <string name="app_name">DankChat</string>
-    <string name="app_name_dank">DankChat (Dank)</string>
+    <string name="app_name">TinyDankChat</string>
+    <string name="app_name_dank">TinyDankChat (Dank)</string>
     <string name="send_hint">Send a message</string>
     <string name="login">Login</string>
     <string name="reload_emotes">Reload emotes</string>
@@ -470,4 +470,28 @@
     <string name="pick_highlight_color_title">Pick custom highlight color</string>
     <string name="reset_default_highlight_color">Default</string>
     <string name="choose_highlight_color">Choose Color</string>
+
+    <string name="emote_sheet_tiny_channel_emote">Channel %1$s Emote</string>
+    <string name="emote_sheet_tiny_global_emote">Global %1$s Emote</string>
+    <string name="preference_about_fork">TinyDankChat %1$s made by @ilotterytea</string>
+    <string name="system_message_tiny_emotes_failed">Failed to load %1$s emotes (Error %2$s)</string>
+
+    <string name="preference_tiny_category_title" translatable="false">TinyEmotes</string>
+    <string name="tiny_instances">Instances</string>
+    <string name="tiny_instances_summary">Modify emote instances</string>
+    <string name="tiny_instances_add">Add an instance</string>
+    <string name="tiny_instances_remove">Remove the instance</string>
+    <string name="tiny_instances_url_hint">Instance URL</string>
+    <string name="tiny_instances_global_emotes">Enable global emotes</string>
+    <string name="tiny_instances_channel_emotes">Enable channel emotes</string>
+
+    <string name="preference_encryption_category_title">Encryption</string>
+    <string name="preference_enable_message_encryption">Enable message encryption</string>
+    <string name="preference_enable_message_encryption_summary">Adds an encryption button and automatically decrypts messages</string>
+    <string name="preference_add_random_spaces">Add random spaces after encryption</string>
+    <string name="preference_add_random_spaces_summary">Makes messages appear more natural</string>
+    <string name="preference_encryption_encoding">Encryption encoding</string>
+    <string name="preference_encryption_password">Password</string>
+    <string name="encrypt_on_send">Encrypt on send</string>
+    <string name="hint_connected_encrypted">Start chatting (encrypted)</string>
 </resources>
