@@ -534,6 +534,10 @@ class ChatRepository(
                     chatSettingsDataStore.encryptionPassword.first(),
                     chatSettingsDataStore.encryptionEncoding.first()
                 )
+
+                if (chatSettingsDataStore.randomEncryptedSpaces.first()) {
+                    x = ChatEncryption.addRandomSpaces(x)
+                }
             }
             x
         }

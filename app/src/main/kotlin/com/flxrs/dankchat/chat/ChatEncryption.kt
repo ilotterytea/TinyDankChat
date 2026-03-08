@@ -35,7 +35,9 @@ class ChatEncryption {
             return text.map { encodings[encoding]?.get(it) ?: it.toString() }.joinToString("")
         }
 
-        fun decrypt(text: String, password: String, encoding: Encoding): String {
+        fun decrypt(input: String, password: String, encoding: Encoding): String {
+            val text = input.replace(" ", "")
+
             // converting to hex
             val map = encodings[encoding]?.entries?.associate { it.value to it.key }
                 ?: encodings[Encoding.Nothing]!!.entries.associate { it.value to it.key }
@@ -65,6 +67,26 @@ class ChatEncryption {
             val cipher = Cipher.getInstance("AES/CBC/PKCS5Padding")
             cipher.init(Cipher.DECRYPT_MODE, SecretKeySpec(key, "AES"), IvParameterSpec(iv))
             return cipher.doFinal(ciphertext).toString(Charsets.UTF_8)
+        }
+
+        fun addRandomSpaces(text: String): String {
+            val sb = StringBuilder()
+            var i = 0
+            val random = java.util.Random()
+
+            while (i < text.length) {
+                val codePoint = text.codePointAt(i)
+                val charCount = Character.charCount(codePoint)
+                sb.append(String(Character.toChars(codePoint)))
+
+                if (random.nextDouble() < 0.2) {
+                    sb.append(' ')
+                }
+
+                i += charCount
+            }
+
+            return sb.toString()
         }
 
         fun detectEncoding(text: String): Encoding? {
