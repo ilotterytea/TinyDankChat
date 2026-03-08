@@ -1,7 +1,9 @@
 package com.flxrs.dankchat.data.twitch.message
 
 import android.graphics.Color
+import android.util.Log
 import androidx.annotation.ColorInt
+import com.flxrs.dankchat.chat.ChatEncryption
 import com.flxrs.dankchat.data.DisplayName
 import com.flxrs.dankchat.data.UserId
 import com.flxrs.dankchat.data.UserName
@@ -34,6 +36,7 @@ data class PrivMessage(
     val userDisplay: UserDisplay? = null,
     val thread: MessageThreadHeader? = null,
     val replyMentionOffset: Int = 0,
+    val encrypted: Boolean = false,
     override val emoteData: EmoteData = EmoteData(
         message = originalMessage,
         channel = sourceChannel ?: channel,
@@ -43,7 +46,7 @@ data class PrivMessage(
 ) : Message() {
 
     companion object {
-        fun parsePrivMessage(ircMessage: IrcMessage, findChannel: (UserId) -> UserName?): PrivMessage = with(ircMessage) {
+        fun parsePrivMessage(ircMessage: IrcMessage, findChannel: (UserId) -> UserName?, decryptionPassword: String? = null): PrivMessage = with(ircMessage) {
             val (name, id) = when (ircMessage.command) {
                 "USERNOTICE" -> tags.getValue("login") to (tags["id"]?.let { "$it-msg" } ?: UUID.randomUUID().toString())
                 else         -> prefix.substringBefore('!') to (tags["id"] ?: UUID.randomUUID().toString())
@@ -55,13 +58,27 @@ data class PrivMessage(
             val ts = tags["tmi-sent-ts"]?.toLongOrNull() ?: System.currentTimeMillis()
             var isAction = false
             val messageParam = params.getOrElse(1) { "" }
-            val message = when {
+            var message = when {
                 params.size > 1 && messageParam.startsWith("\u0001ACTION") && messageParam.endsWith("\u0001") -> {
                     isAction = true
                     messageParam.substring("\u0001ACTION ".length, messageParam.length - "\u0001".length)
                 }
 
                 else                                                                                          -> messageParam
+            }
+
+            var encrypted = false
+
+            if (decryptionPassword != null) {
+                val encoding = ChatEncryption.detectEncoding(message)
+                if (encoding != null) {
+                    try {
+                        message = ChatEncryption.decrypt(message, decryptionPassword, encoding)
+                        encrypted = true
+                    } catch (e: Exception) {
+                        Log.e("ChatEncryption", "Failed to decrypt a message: ${e.message}")
+                    }
+                }
             }
 
             val channel = params[0].substring(1).toUserName()
@@ -83,6 +100,7 @@ data class PrivMessage(
                 userId = tags["user-id"]?.toUserId(),
                 timedOut = tags["rm-deleted"] == "1",
                 tags = tags,
+                encrypted = encrypted
             )
         }
     }

@@ -2,6 +2,7 @@ package com.flxrs.dankchat.data.repo.chat
 
 import android.graphics.Color
 import android.util.Log
+import com.flxrs.dankchat.chat.ChatEncryption
 import com.flxrs.dankchat.chat.ChatImportance
 import com.flxrs.dankchat.chat.ChatItem
 import com.flxrs.dankchat.chat.toMentionTabItems
@@ -76,6 +77,7 @@ import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
@@ -523,7 +525,20 @@ class ChatRepository(
         }
 
         lastMessage[channel] = messageWithSuffix
-        return "${replyIdOrBlank}PRIVMSG #$channel :$messageWithSuffix"
+
+        var msg = runBlocking {
+            var x = messageWithSuffix
+            if (chatSettingsDataStore.enableMessageEncryption.first()) {
+                x = ChatEncryption.encrypt(
+                    x,
+                    chatSettingsDataStore.encryptionPassword.first(),
+                    chatSettingsDataStore.encryptionEncoding.first()
+                )
+            }
+            x
+        }
+
+        return "${replyIdOrBlank}PRIVMSG #$channel :$msg"
     }
 
     private suspend fun onMessage(msg: IrcMessage): List<ChatItem>? {
@@ -660,8 +675,13 @@ class ChatRepository(
             else             -> emptyList()
         }
 
+        var password: String? = null
+        if (chatSettingsDataStore.enableMessageEncryption.first()) {
+            password = chatSettingsDataStore.encryptionPassword.first()
+        }
+
         val message = runCatching {
-            Message.parse(ircMessage, channelRepository::tryGetUserNameById)
+            Message.parse(ircMessage, channelRepository::tryGetUserNameById, password)
                 ?.applyIgnores()
                 ?.calculateMessageThread { channel, id -> messages[channel]?.value?.find { it.message.id == id }?.message }
                 ?.calculateUserDisplays()
@@ -823,8 +843,13 @@ class ChatRepository(
                     }
 
                     else        -> {
+                        var password: String? = null
+                        if (chatSettingsDataStore.enableMessageEncryption.first()) {
+                            password = chatSettingsDataStore.encryptionPassword.first()
+                        }
+
                         val message = runCatching {
-                            Message.parse(parsedIrc, channelRepository::tryGetUserNameById)
+                            Message.parse(parsedIrc, channelRepository::tryGetUserNameById, password)
                                 ?.applyIgnores()
                                 ?.calculateMessageThread { _, id -> items.find { it.message.id == id }?.message }
                                 ?.calculateUserDisplays()

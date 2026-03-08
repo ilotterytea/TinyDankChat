@@ -19,9 +19,9 @@ sealed class Message {
     companion object {
         private const val DEFAULT_COLOR_TAG = "#717171"
         val DEFAULT_COLOR = DEFAULT_COLOR_TAG.toColorInt()
-        fun parse(message: IrcMessage, findChannel: (UserId) -> UserName?): Message? = with(message) {
+        fun parse(message: IrcMessage, findChannel: (UserId) -> UserName?, decryptionPassword: String? = null): Message? = with(message) {
             return when (command) {
-                "PRIVMSG"    -> PrivMessage.parsePrivMessage(message, findChannel)
+                "PRIVMSG"    -> PrivMessage.parsePrivMessage(message, findChannel, decryptionPassword)
                 "NOTICE"     -> NoticeMessage.parseNotice(message)
                 "USERNOTICE" -> UserNoticeMessage.parseUserNotice(message, findChannel)
                 else         -> null

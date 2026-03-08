@@ -168,6 +168,31 @@ class ChatSettingsDataStore(
         .distinctUntilChanged()
         .debounce(2.seconds)
 
+    val enableMessageEncryption = settings
+        .map { it.enableMessageEncryption }
+        .distinctUntilChanged()
+        .debounce(2.seconds)
+
+    val encryptOnSend = settings
+        .map { it.encryptOnSend }
+        .distinctUntilChanged()
+        .debounce(2.seconds)
+
+    val randomEncryptedSpaces = settings
+        .map { it.randomEncryptedSpaces }
+        .distinctUntilChanged()
+        .debounce(2.seconds)
+
+    val encryptionPassword = settings
+        .map { it.encryptionPassword }
+        .distinctUntilChanged()
+        .debounce(2.seconds)
+
+    val encryptionEncoding = settings
+        .map { it.encryptionEncoding }
+        .distinctUntilChanged()
+        .debounce(2.seconds)
+
     val restartChat = settings.distinctUntilChanged { old, new ->
         old.showTimestamps != new.showTimestamps ||
                 old.timestampFormat != new.timestampFormat ||

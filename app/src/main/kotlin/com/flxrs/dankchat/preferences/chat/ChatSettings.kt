@@ -1,5 +1,6 @@
 package com.flxrs.dankchat.preferences.chat
 
+import com.flxrs.dankchat.chat.ChatEncryption
 import com.flxrs.dankchat.data.twitch.badge.BadgeType
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
@@ -28,6 +29,11 @@ data class ChatSettings(
     val loadMessageHistoryOnReconnect: Boolean = true,
     val showChatModes: Boolean = true,
     val sharedChatMigration: Boolean = false,
+    val enableMessageEncryption: Boolean = false,
+    val encryptOnSend: Boolean = false,
+    val randomEncryptedSpaces: Boolean = false,
+    val encryptionPassword: String = ChatEncryption.DEFAULT_PASSWORD,
+    val encryptionEncoding: ChatEncryption.Encoding = ChatEncryption.Encoding.Hebrew,
     val tinyInstances: List<TinyInstance> = emptyList()
 ) {
 

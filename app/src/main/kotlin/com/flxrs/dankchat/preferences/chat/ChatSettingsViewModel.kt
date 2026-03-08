@@ -2,6 +2,7 @@ package com.flxrs.dankchat.preferences.chat
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.flxrs.dankchat.chat.ChatEncryption
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -12,6 +13,7 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import org.koin.android.annotation.KoinViewModel
+import kotlin.String
 import kotlin.time.Duration.Companion.seconds
 
 @KoinViewModel
@@ -65,6 +67,10 @@ class ChatSettingsViewModel(
                 is ChatSettingsInteraction.MessageHistory               -> chatSettingsDataStore.update { it.copy(loadMessageHistory = interaction.value) }
                 is ChatSettingsInteraction.MessageHistoryAfterReconnect -> chatSettingsDataStore.update { it.copy(loadMessageHistoryOnReconnect = interaction.value) }
                 is ChatSettingsInteraction.ChatModes                    -> chatSettingsDataStore.update { it.copy(showChatModes = interaction.value) }
+                is ChatSettingsInteraction.EnableMessageEncryption      -> chatSettingsDataStore.update { it.copy(enableMessageEncryption = interaction.value) }
+                is ChatSettingsInteraction.RandomEncryptedSpaces        -> chatSettingsDataStore.update { it.copy(randomEncryptedSpaces = interaction.value) }
+                is ChatSettingsInteraction.EncryptionPassword           -> chatSettingsDataStore.update { it.copy(encryptionPassword = interaction.value) }
+                is ChatSettingsInteraction.EncryptionEncoding           -> chatSettingsDataStore.update { it.copy(encryptionEncoding = interaction.value) }
             }
         }
     }
@@ -94,6 +100,10 @@ sealed interface ChatSettingsInteraction {
     data class MessageHistory(val value: Boolean) : ChatSettingsInteraction
     data class MessageHistoryAfterReconnect(val value: Boolean) : ChatSettingsInteraction
     data class ChatModes(val value: Boolean) : ChatSettingsInteraction
+    data class EnableMessageEncryption(val value: Boolean) : ChatSettingsInteraction
+    data class RandomEncryptedSpaces(val value: Boolean) : ChatSettingsInteraction
+    data class EncryptionPassword(val value: String) : ChatSettingsInteraction
+    data class EncryptionEncoding(val value: ChatEncryption.Encoding) : ChatSettingsInteraction
 }
 
 data class ChatSettingsState(
@@ -117,6 +127,11 @@ data class ChatSettingsState(
     val loadMessageHistoryAfterReconnect: Boolean,
     val messageHistoryDashboardUrl: String,
     val showChatModes: Boolean,
+    val enableMessageEncryption: Boolean,
+    val encryptOnSend: Boolean,
+    val randomEncryptedSpaces: Boolean,
+    val encryptionPassword: String,
+    val encryptionEncoding: ChatEncryption.Encoding,
     val tinyInstances: ImmutableList<TinyInstance>
 )
 
@@ -141,6 +156,11 @@ private fun ChatSettings.toState() = ChatSettingsState(
     loadMessageHistoryAfterReconnect = loadMessageHistoryOnReconnect,
     messageHistoryDashboardUrl = RECENT_MESSAGES_DASHBOARD,
     showChatModes = showChatModes,
+    enableMessageEncryption = enableMessageEncryption,
+    encryptOnSend = encryptOnSend,
+    randomEncryptedSpaces = randomEncryptedSpaces,
+    encryptionPassword = encryptionPassword,
+    encryptionEncoding = encryptionEncoding,
     tinyInstances = tinyInstances.toImmutableList()
 )
 
