@@ -528,7 +528,7 @@ class ChatRepository(
 
         var msg = runBlocking {
             var x = messageWithSuffix
-            if (chatSettingsDataStore.enableMessageEncryption.first()) {
+            if (chatSettingsDataStore.enableMessageEncryption.first() && chatSettingsDataStore.encryptOnSend.first()) {
                 x = ChatEncryption.encrypt(
                     x,
                     chatSettingsDataStore.encryptionPassword.first(),
